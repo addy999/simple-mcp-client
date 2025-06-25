@@ -9,10 +9,21 @@ This project uses uv instead of pip, simply run any of the following commands an
 Python server file:
 
 ```bash
-uv run client.py example-server.py
+>> uv run client.py example-server.py
+
+INFO     Starting MCP server 'ExampleServer' with transport 'stdio' example-server.py:1246
+
+>> Enter your query (or 'exit' to quit): Hi what can you do?
+INFO:MCP Client: Response: I can fetch the current weather for a city, or I can tell you the current city.
+
+>> Enter your query (or 'exit' to quit): can you tell me the weather in the current city?
+Calling tool: get_current_city with arguments: {}
+Calling tool: fetch_weather with arguments: {"city": "Toronto"}
+
+INFO:MCP Client: Response: OK. The weather in Toronto, Canada is partly cloudy. The temperature is 29.4 degrees Celsius, but it feels like 32.4 degrees Celsius. The wind is blowing from the North at 4.7 kilometers per hour.
 ```
 
-COnnect to an MCP server package
+You can also connect to an MCP server package
 
 ```bash
 uv run client.py @modelcontextprotocol/server-sequential-thinking

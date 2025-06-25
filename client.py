@@ -91,7 +91,7 @@ class MyClient:
         self.messages: list[dict] = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant. Use the tools provided to answer user queries. Do not wait for user input before using a tool.",
+                "content": "You are a helpful assistant. Use the tools provided to answer user queries. You can call tools as needed without asking the user.",
             }
         ]
         self.resources: dict[str, str] = {}  # name to uri mapping
