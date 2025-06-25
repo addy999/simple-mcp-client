@@ -4,6 +4,14 @@ Connect to an MCP server from your terminal and chat using Gemini.
 
 This project uses uv instead of pip, simply run any of the following commands and all packages will be installed and a .venv will be created automatically.
 
+## Capabilities
+
+- [x] Supports any MCP server package
+- [x] Supports stdio and sse transport
+- [x] Supports one tool calling at a time
+- [x] Supports resources with an inline tool implementation
+- [ ] MCP server prompts not yet supported
+
 ## Examples:
 
 Python server file:
