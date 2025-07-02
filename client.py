@@ -6,6 +6,7 @@ import colorlog
 import typer
 from fastmcp import Client
 from litellm import async_completion_with_fallbacks
+from litellm.utils import ModelResponse
 from mcp.types import Resource, Tool
 from typing_extensions import Annotated
 
@@ -34,8 +35,8 @@ logger.propagate = False
 
 
 MODELS = [
-    "gemini/gemini-2.0-flash",
     "gemini/gemini-2.5-pro",
+    "gemini/gemini-2.0-flash",
 ]
 
 
@@ -99,8 +100,8 @@ class MyClient:
     async def fetch_resource(self, name: str) -> str:
         async with self.client as client:
             uri = self.resources.get(name)
-            result = await client.read_resource(uri)
-            return result[0].text
+            result = await client.read_resource(uri)  # type: ignore
+            return result[0].text  # type: ignore
 
     async def _load_tools(self):
         self.tools = []
@@ -128,12 +129,12 @@ class MyClient:
 
         self.messages.append({"role": "user", "content": query})
 
-        response = await async_completion_with_fallbacks(
+        response: ModelResponse = await async_completion_with_fallbacks(
             model=MODELS[0],
             fallbacks=MODELS[1:],
             messages=self.messages,
             tools=self.tools,
-        )
+        )  # type: ignore
 
         text_response = response.choices[0].message.content
 
