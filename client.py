@@ -163,10 +163,7 @@ class MyClient:
                         tool_name, json.loads(tool_args)
                     )
                     tool_response = result[0].text
-                    if tool_response.startswith("{"):
-                        return await self.process_query(tool_response)
-                    else:
-                        text_response = tool_response
+                    return await self.process_query(tool_response)
 
         self.messages.append(
             {
@@ -198,7 +195,13 @@ def main(
     """Main entry point for the client."""
 
     async def run():
-        client = MyClient(server)
+
+        if server.startswith("@"):
+            client = MyClient(
+                {"mcpServers": {"server": {"command": "npx", "args": [server]}}}
+            )
+        else:
+            client = MyClient(server)
         await client._load_tools()
         logger.info(f"Tools available: {client.tools}")
         await client.run()
