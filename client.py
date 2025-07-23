@@ -6,7 +6,7 @@ import colorlog
 import typer
 from fastmcp import Client
 from litellm import async_completion_with_fallbacks
-from litellm.utils import ModelResponse
+from litellm.types.utils import ModelResponse, ChatCompletionMessageToolCall
 from mcp.types import Resource, Tool
 from typing_extensions import Annotated
 
@@ -22,7 +22,7 @@ handler.setFormatter(
             "INFO": "green",
             "WARNING": "yellow",
             "ERROR": "red",
-            "CRITICAL": "red,bg_white",
+            "CRITICAL": "bold_red",
         },
     )
 )
@@ -136,14 +136,17 @@ class MyClient:
             tools=self.tools,
         )  # type: ignore
 
-        text_response = response.choices[0].message.content
+        text_response = response.choices[0].message.content  # type: ignore
+        tool_calls: list[ChatCompletionMessageToolCall] = response.choices[
+            0
+        ].message.tool_calls  # type: ignore
 
-        if response.choices[0].message.tool_calls:
-            call = response.choices[0].message.tool_calls[0]
+        if tool_calls:
+            call = tool_calls[0]
             tool_name = call.function.name
             tool_args = call.function.arguments
 
-            print(f"Calling tool: {tool_name} with arguments: {tool_args}")
+            logger.warning(f"Calling tool: {tool_name} with arguments: {tool_args}")
 
             self.messages.append(
                 {
@@ -152,18 +155,19 @@ class MyClient:
                 }
             )
 
-            if tool_name in self.resources:
-                tool_response = await self.fetch_resource(tool_name)
-                return await self.process_query(tool_response)
-
-            else:
-                # Call the tool using the FastMCP client
-                async with self.client:
-                    result = await self.client.call_tool(
-                        tool_name, json.loads(tool_args)
-                    )
-                    tool_response = result[0].text
+            if tool_name:
+                if tool_name in self.resources:
+                    tool_response = await self.fetch_resource(tool_name)
                     return await self.process_query(tool_response)
+
+                else:
+                    # Call the tool using the FastMCP client
+                    async with self.client:
+                        result = await self.client.call_tool(
+                            tool_name, json.loads(tool_args)
+                        )
+                        tool_response = result[0].text  # type: ignore
+                        return await self.process_query(tool_response)
 
         self.messages.append(
             {
@@ -176,12 +180,13 @@ class MyClient:
 
     async def run(self):
         """Run the client to process queries interactively."""
+        logger.info("Client is running. Type 'exit' to quit.")
         while True:
-            query = input("Enter your query (or 'exit' to quit): ")
+            query = input("User: ")
             if query.lower() == "exit":
                 break
             response = await self.process_query(query)
-            logger.info(f" Response: {response}")
+            print(f"Assistant: {response}")
 
 
 def main(
